@@ -328,15 +328,27 @@ public class TelaConsultarClientesAReceber extends javax.swing.JFrame {
         if(tabelaValores.getSelectedRow()==-1){
             JOptionPane.showMessageDialog(null, "Selecione pelo menos uma linha!");
         }else{
-            int linhas[] = tabelaValores.getSelectedRows();
-        
+            ArrayList<ClienteAReceber> clientesArray = new ArrayList();
             double valorTotal=0;
 
             int flag=0;
-            for(int i=0; i<tabelaValores.getSelectedRowCount(); i++){
-                if(!tabelaValores.getValueAt(i, 9).toString().equals("PAGO")){                  
+            for(int i=0; i<tabelaValores.getRowCount(); i++){
+                if(!(tabelaValores.getValueAt(i, 9).toString().equals("PAGO"))){                  
                     valorTotal+=calcularJuros(tabelaValores.getValueAt(i, 5).toString(), Double.parseDouble(tabelaValores.getValueAt(i, 6).toString().substring(3, tabelaValores.getValueAt(i, 6).toString().length()-1).replace(",", ".")));
                     flag=1;
+                    
+                    ClienteAReceber car = new ClienteAReceber();
+                    car.setId(Integer.parseInt(tabelaValores.getValueAt(i, 0).toString()));
+                    car.setData(converteData(tabelaValores.getValueAt(i, 1).toString()));
+                    car.setIdcliente(Integer.parseInt(tabelaValores.getValueAt(i, 2).toString()));
+                    car.setTipo(tabelaValores.getValueAt(i, 4).toString());
+                    car.setVencimento(converteData(tabelaValores.getValueAt(i, 5).toString()));
+                    car.setValor(Double.parseDouble(tabelaValores.getValueAt(i, 6).toString().substring(3, tabelaValores.getValueAt(i, 6).toString().length()-1).replace(",", ".")));
+                    car.setDataPagamento(converteData(getData()));
+                    car.setValorPago(calcularJuros(tabelaValores.getValueAt(i, 5).toString(), Double.parseDouble(tabelaValores.getValueAt(i, 6).toString().substring(3, tabelaValores.getValueAt(i, 6).toString().length()-1).replace(",", "."))));
+                    car.setSituacao(tabelaValores.getValueAt(i, 8).toString());
+                    
+                    clientesArray.add(car);
                 }
             }
 
@@ -348,22 +360,10 @@ public class TelaConsultarClientesAReceber extends javax.swing.JFrame {
 
                 int op = JOptionPane.showConfirmDialog(null, "Valor total: "+valorFinal+"\nDeseja realizar o pagamento? ", null, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if(op==0){
-                    for(int i=0; i<tabelaValores.getSelectedRowCount(); i++){
-                        if(!tabelaValores.getValueAt(i, 8).toString().equals("PAGO")){
-                            ClienteAReceber car = new ClienteAReceber();
-                            car.setId(Integer.parseInt(tabelaValores.getValueAt(i, 0).toString()));
-                            car.setData(converteData(tabelaValores.getValueAt(i, 1).toString()));
-                            car.setIdcliente(Integer.parseInt(tabelaValores.getValueAt(i, 2).toString()));
-                            car.setTipo(tabelaValores.getValueAt(i, 4).toString());
-                            car.setVencimento(converteData(tabelaValores.getValueAt(i, 5).toString()));
-                            car.setValor(Double.parseDouble(tabelaValores.getValueAt(i, 6).toString().substring(3, tabelaValores.getValueAt(i, 6).toString().length()-1).replace(",", ".")));
-                            car.setDataPagamento(converteData(getData()));
-                            car.setValorPago(calcularJuros(tabelaValores.getValueAt(i, 5).toString(), Double.parseDouble(tabelaValores.getValueAt(i, 6).toString().substring(3, tabelaValores.getValueAt(i, 6).toString().length()-1).replace(",", "."))));
-                            car.setSituacao("PAGO");
-                            
+                    for(ClienteAReceber c: clientesArray){
+                            c.setSituacao("PAGO");
                             ClienteAReceberDao card = new ClienteAReceberDao();
-                            card.alterar(car, 1);
-                        }
+                            card.alterar(c, 2);
                     }
                 }
             }
